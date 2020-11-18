@@ -185,11 +185,11 @@ void InputFromFile(vector<CS>& vecCS, vector<Pipe>& vecPipe, char* str)
     {
         vecPipe.clear();
         vecCS.clear();
-        Pipe pipe1;
-        CS cs1;
         string buff;
         while (fin >> buff)
         {
+            Pipe pipe1;
+            CS cs1;
             if (buff == "pipe")
             {
                 fin >> pipe1.length;
