@@ -1,20 +1,36 @@
-#include "Pipe.h"
 
+#include "Pipe.h"
 
 
 int Pipe::MAX_ID = 0;
 
-Pipe::Pipe() 
+Pipe::Pipe(int needed) 
+{
+	if (needed != -1)
+	id = ++MAX_ID;
+}
+
+Pipe::Pipe()
 {
 	id = ++MAX_ID;
 }
 
+void Pipe::setID(int id) {
+	this->id = id;
+}
+
+int Pipe::getID()
+{
+	return id;
+}
+
 std::ostream& operator << (std::ostream& out, const Pipe& p)
 {
-	out << "Длина: " << p.length << endl;
-	out << "Диаметр: " << p.diam << endl;
+	out << "ID: " << p.id << std::endl;
+	out << "Длина: " << p.length << std::endl;
+	out << "Диаметр: " << p.diam << std::endl;
 	out << (p.repaired ? "В ремонте !" : "Не в ремонте!");
-	out << endl;
+	out << std::endl;
 	return out;
 }
 std::istream& operator >> (std::istream& in, Pipe& pipe1)

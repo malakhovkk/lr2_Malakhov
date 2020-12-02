@@ -8,23 +8,28 @@
 #include "Pipe.h"
 #include "utils.h"
 #include "CS.h"
-
+#include <unordered_map>
 using namespace std;
 
-
-void AddPipe(vector<Pipe>& vecPipe)
+struct pairCS
 {
-    Pipe pipe1;
+    int idCS;
+    float length;
+};
+
+void AddPipe( unordered_map<int, Pipe>& mapPipe)
+{
+    Pipe pipe1(0);
     pipe1.length = inputNotNegativeFloat("Введите длину: ");
     pipe1.diam = inputNotNegativeFloat("Введите диаметр: ");
-    vecPipe.push_back(pipe1);
+    mapPipe.insert(make_pair(pipe1.getID(), pipe1));
 }
 
 
 
-void AddCS(vector<CS>& vecCS)
+void AddCS(unordered_map<int, CS>& mapCS)
 {
-    CS cs1;
+    CS cs1(0);
     strcpy_s(cs1.name, inputString("Введите наименование: "));
     cs1.number = inputNotNegativeInteger("Введите количество цехов: ");
     int cur = inputNotNegativeInteger("Введите количество цехов в работе: ");
@@ -35,45 +40,47 @@ void AddCS(vector<CS>& vecCS)
     }
     cs1.numberOfAvailable = cur;
     cs1.efficiency = inputNotNegativeFloat("Введите показатель эффективности: ");
-    vecCS.push_back(cs1);
+    mapCS.insert(make_pair(cs1.getID(), cs1));
 }
 
-void DisplayCS(vector<CS>& vecCS)
+void DisplayCS(unordered_map<int, CS>& mapCS)
 {
     int i = 1;
-    if (vecCS.size() == 0) cout << "Нет КС!";
-    for (auto& it : vecCS)
+    if (mapCS.size() == 0) cout << "Нет КС!";
+    for (auto& it : mapCS)
     {
         cout << "Компрессорная станция №: " << i++ << endl;
-        cout << "Наименование: " << it.name << endl;
-        cout << "Количество цехов: " << it.number << endl;
-        cout << "Количество цехов в работе: " << it.numberOfAvailable << endl;
-        cout << "Показатель эффективности: " << it.efficiency << endl << endl;
+        cout << "ID: " << it.second.getID() << std::endl;
+        cout << "Наименование: " << it.second.name << endl;
+        cout << "Количество цехов: " << it.second.number << endl;
+        cout << "Количество цехов в работе: " << it.second.numberOfAvailable << endl;
+        cout << "Показатель эффективности: " << it.second.efficiency << endl << endl;
     }
 }
 
-void DisplayPipes(vector<Pipe>& vecPipe)
+void DisplayPipes(unordered_map<int, Pipe>& mapPipe)
 {
 
     int i = 1;
 
-    if (vecPipe.size() == 0) cout << "Нет труб!";
-    for (auto& it : vecPipe)
+    if (mapPipe.size() == 0) cout << "Нет труб!";
+    for (auto& it : mapPipe)
     {
         cout << "Труба №: " << i++ << endl;
-        cout << "Длина: " << it.length << endl;
-        cout << "Диаметр: " << it.diam << endl;
-        cout << (it.repaired ? "В ремонте !" : "Не в ремонте!");
+        cout << "ID: " << it.second.getID() << endl;
+        cout << "Длина: " << it.second.length << endl;
+        cout << "Диаметр: " << it.second.diam << endl;
+        cout << (it.second.repaired ? "В ремонте !" : "Не в ремонте!");
         cout << endl;
     }
 }
 
-void EditPipes(vector<Pipe>& vecPipe)
+void EditPipes(unordered_map<int, Pipe>& mapPipe)
 {
-    DisplayPipes(vecPipe);
+    DisplayPipes(mapPipe);
     int num;
-    num = inputNotNegativeInteger("Введите номер трубы: ");
-    if (num > vecPipe.size() || num <= 0)
+    num = inputNotNegativeInteger("Введите ID трубы: ");
+    if (mapPipe.find(num) == mapPipe.end())
     {
         cout << "Такой трубы не существует! ";
     }
@@ -85,23 +92,23 @@ void EditPipes(vector<Pipe>& vecPipe)
         {
             isRepaired = inputNotNegativeInteger("Редактирование признака 'в ремонте' для трубы(0 - не в ремонте, 1 - в ремонте): ");
         }
-        vecPipe[num - 1].repaired = (bool)isRepaired;
+        mapPipe[num].repaired = (bool)isRepaired;
 
         cout << "Исправленная труба: " << endl;
-        cout << "Длина: " << vecPipe[num - 1].length << endl;
-        cout << "Диаметр: " << vecPipe[num - 1].diam << endl;
-        cout << (vecPipe[num - 1].repaired ? "В ремонте !" : "Не в ремонте!");
+        cout << "Длина: " << mapPipe[num].length << endl;
+        cout << "Диаметр: " << mapPipe[num].diam << endl;
+        cout << (mapPipe[num].repaired ? "В ремонте !" : "Не в ремонте!");
 
         // ВЫВЕСТИ ТРУБУ, КОТОРУЮ ОТРЕДАКТИРОВАЛИ
     }
 }
 
-void EditCS(vector<CS>& vecCS)
+void EditCS(unordered_map<int, CS>& mapCS)
 {
-    DisplayCS(vecCS);
+    DisplayCS(mapCS);
     int num;
-    num = inputNotNegativeInteger("Введите номер КС: ");
-    if (num > vecCS.size() || num <= 0)
+    num = inputNotNegativeInteger("Введите ID КС: ");
+    if (mapCS.find(num) == mapCS.end())
     {
         cout << "Такой станции не существует! ";
     }
@@ -122,15 +129,15 @@ void EditCS(vector<CS>& vecCS)
             res = 1;
         }
 
-        if (vecCS[num - 1].numberOfAvailable + res >= 0 && vecCS[num - 1].numberOfAvailable + res <= vecCS[num - 1].number)
+        if (mapCS[num].numberOfAvailable + res >= 0 && mapCS[num].numberOfAvailable + res <= mapCS[num].number)
         {
-            vecCS[num - 1].numberOfAvailable += res;
+            mapCS[num].numberOfAvailable += res;
 
             cout << "Измененная компрессорная станция: " << endl;
-            cout << "Наименование: " << vecCS[num - 1].name << endl;
-            cout << "Количество цехов: " << vecCS[num - 1].number << endl;
-            cout << "Количество цехов в работе: " << vecCS[num - 1].numberOfAvailable << endl;
-            cout << "Показатель эффективности: " << vecCS[num - 1].efficiency << endl << endl;
+            cout << "Наименование: " << mapCS[num].name << endl;
+            cout << "Количество цехов: " << mapCS[num].number << endl;
+            cout << "Количество цехов в работе: " << mapCS[num].numberOfAvailable << endl;
+            cout << "Показатель эффективности: " << mapCS[num].efficiency << endl << endl;
 
         }
         else
@@ -140,35 +147,37 @@ void EditCS(vector<CS>& vecCS)
     }
 }
 
-void OutputToFile(const vector<CS>& vecCS, const vector<Pipe>& vecPipe, char * str)
+void OutputToFile(unordered_map<int, CS>& mapCS, unordered_map<int, Pipe>& mapPipe, char * str)
 {
 
     ofstream fout;
-    fout.open(str);
+    fout.open(string(str) + ".txt");
     if (!fout.is_open())
         cout << "Файл не может быть открыт!\n";
     else
     {
-        int i = 1;
-        if (vecCS.size() == 0) fout << "Нет КС!";
-        for (auto& it : vecCS)
+   
+        for (auto& it : mapCS)
         {
-            fout << "Компрессорная станция №: " << i++ << endl;
-            fout << "Наименование: " << it.name << endl;
-            fout << "Количество цехов: " << it.number << endl;
-            fout << "Количество цехов в работе: " << it.numberOfAvailable << endl;
-            fout << "Показатель эффективности: " << it.efficiency << endl << endl;
+            fout << "cs" << endl;
+            int id = it.second.getID();
+            fout <<  id << endl;
+            fout <<  it.second.name << endl;
+            fout <<  it.second.number << endl;
+            fout <<  it.second.numberOfAvailable << endl;
+            fout <<  it.second.efficiency << endl << endl;
         }
 
-        i = 1;
-        if (vecPipe.size() == 0) fout << "Нет труб!";
-        for (auto& it : vecPipe)
+     
+        
+        for (auto& it : mapPipe)
         {
-            fout << "Труба №: " << i++ << endl;
-            fout << "Длина: " << it.length << endl;
-            fout << "Диаметр: " << it.diam << endl;
-            fout << (it.repaired ? "В ремонте !" : "Не в ремонте!");
-            fout << endl;
+            fout << "pipe" << endl;
+            int id = it.second.getID();
+            fout << id << endl;
+            fout << it.second.length << endl;
+            fout << it.second.diam << endl;
+            fout << (it.second.repaired ? 1 : 0) << endl;
         }
         cout << "Вывели трубы и КС в файл output.txt";
 
@@ -176,74 +185,85 @@ void OutputToFile(const vector<CS>& vecCS, const vector<Pipe>& vecPipe, char * s
     }
 }
 
-void InputFromFile(vector<CS>& vecCS, vector<Pipe>& vecPipe, char* str)
+void InputFromFile(unordered_map<int, CS>& mapCS, unordered_map<int, Pipe>& mapPipe, char* str)
 {
-    ifstream fin("input.txt");
+    ifstream fin(string(str) + ".txt");
     if (!fin.is_open())
         cout << "Файл не может быть открыт!\n";
     else
     {
-        vecPipe.clear();
-        vecCS.clear();
+        mapPipe.clear();
+        mapCS.clear();
         string buff;
+        int maxid1 = -1;
+        int maxid2 = -1;
         while (fin >> buff)
         {
-            Pipe pipe1;
-            CS cs1;
+            Pipe pipe1(-1);
+            CS cs1(-1);
             if (buff == "pipe")
             {
+                int id;
+                fin >> id;
+                pipe1.setID(id);
                 fin >> pipe1.length;
                 fin >> pipe1.diam;
-                vecPipe.push_back(pipe1);
+                fin >> pipe1.repaired;
+                mapPipe.insert(make_pair(pipe1.getID(), pipe1));
+                if (maxid1 < id) maxid1 = id;
             }
             else
             {
+                int id;
+                fin >> id;
+                cs1.setID(id);
                 fin >> cs1.name;
                 fin >> cs1.number;
                 fin >> cs1.numberOfAvailable;
                 fin >> cs1.efficiency;
-                vecCS.push_back(cs1);
+                mapCS.insert(make_pair(cs1.getID(), cs1));
+                if (maxid2 < id) maxid2 = id;
             }
+            Pipe::MAX_ID = maxid1;
+            CS::MAX_ID = maxid2;
         }
     }
     cout << "Ввели из файла данные";
     fin.close();
 }
 
-void EraseFromPipes(vector<Pipe>& vecPipe)
+void EraseFromPipes(unordered_map<int, Pipe>& mapPipe)
 {
 
-    DisplayPipes(vecPipe);
-    if (vecPipe.size() > 0) {
+    DisplayPipes(mapPipe);
+    if (mapPipe.size() > 0) {
         int number;
         do {
-            number = inputNotNegativeInteger("Введите трубу, которую нужно удалить: ");
-        } while (number > vecPipe.size() || number == 0);
-        cout << "Удалена " << number << "-я труба";
-        vecPipe.erase(vecPipe.begin() + number - 1);
+            number = inputNotNegativeInteger("Введите ID КС, которую нужно удалить: ");
+        } while (mapPipe.find(number) == mapPipe.end());
+        mapPipe.erase(mapPipe.find(number));
     }
 }
 
-void EraseFromCS(vector<CS>& vecCS)
+void EraseFromCS(unordered_map<int, CS>& mapCS)
 {
 
-    DisplayCS(vecCS);
-    if (vecCS.size() > 0) {
+    DisplayCS(mapCS);
+    if (mapCS.size() > 0) {
         int number;
         do {
-            number = inputNotNegativeInteger("Введите КС, которую нужно удалить: ");
-        } while (number > vecCS.size() || number == 0);
-        cout << "Удалена " << number << "-я КС";
-        vecCS.erase(vecCS.begin() + number - 1);
+            number = inputNotNegativeInteger("Введите ID КС, которую нужно удалить: ");
+        } while (mapCS.find(number) == mapCS.end());
+        mapCS.erase(mapCS.find(number));
     }
 }
 
-vector<int> CSFilterByName(vector<CS>& vecCS, char* str)
+vector<int> CSFilterByName(unordered_map<int, CS>& mapCS, char* str)
 {
     vector<int> res;
-    for (int i = 0; i < vecCS.size(); ++i) {
-        if (strcmp(vecCS[i].name, str) == 0) {
-            res.push_back(i);
+    for (auto &cs1: mapCS) {
+        if (strcmp(cs1.second.name, str) == 0) {
+            res.push_back(cs1.first);
         }
     }
     return res;
@@ -254,33 +274,101 @@ float percent(CS cs1)
     return ((float)cs1.number - (float)cs1.numberOfAvailable) / (float)cs1.number * 100;
 }
 
-vector<int> CSFilterByPerc(vector<CS>& vecCS, float perc)
+vector<int> CSFilterByPerc(unordered_map<int, CS>& mapCS, float perc)
 {
     vector<int> res;
-    for (int i = 0; i < vecCS.size(); ++i) {
-        if (abs(percent(vecCS[i]) - perc) <= 1) {
-            res.push_back(i);
+    for (auto& cs1 : mapCS) {
+        if (abs(percent(cs1.second) - perc) <= 1) {
+            res.push_back(cs1.first);
         }
     }
     return res;
 }
 
-vector<int> PipeFilterByRepaired(vector<Pipe>& vecPipe, bool repaired = true)
+vector<int> PipeFilterByRepaired(unordered_map<int, Pipe>& mapPipe, bool repaired = true)
 {
     vector<int> res;
-    for (int i = 0; i < vecPipe.size(); ++i) {
-        if (vecPipe[i].repaired) {
-            res.push_back(i);
+    for (auto& pipe1 : mapPipe) {
+        if (pipe1.second.repaired) {
+            res.push_back(pipe1.first);
         }
     }
     return res;
 }
+
+void addConnection(unordered_map<int, vector<pairCS>>& graph, unordered_map<int, CS>& mapCS, unordered_map<int, Pipe>& mapPipe, int idPipe, int idCS1, int idCS2)
+{
+    pairCS p1;
+    p1.length = mapPipe[idPipe].length;
+    p1.idCS = idCS2;
+    graph[idCS1].push_back(p1);
+}
+void displayGraph(unordered_map<int, vector<pairCS>>& graph, unordered_map<int, CS>& mapCS, unordered_map<int, Pipe>& mapPipe)
+{
+    for (auto& el: graph)
+    {
+        cout << "КС с ID " << el.first << " соединен с: ";
+        for (auto cs = el.second.begin(); cs != el.second.end(); cs++)
+        {
+            cout << cs->idCS  << " трубой длиной " << cs->length;
+            if (cs + 1 != el.second.end()) cout << ", ";
+        }
+        cout << endl;
+    }
+}
+
+struct pairUsed
+{
+    int id;
+    bool used;
+};
+
+void dfs(int v, unordered_map<int, vector<pairCS>>& g, unordered_map<int, bool>& count, vector<int>& ans) {
+    count[v] = true;
+    vector<pairCS> arr;
+    arr = g[v];
+    for (auto & el: arr) {
+        int to = el.idCS;
+        if (!count[to])
+            dfs(to, g, count, ans);
+    }
+    ans.push_back(v);
+}
+
+unordered_map<int, bool> countCS(unordered_map<int, vector<pairCS>>& g)
+{
+    unordered_map<int, bool> countArr;
+    for (auto& el : g)
+    {
+        countArr[el.first] = false;
+        for (auto& p1 : el.second)
+        {
+            countArr[p1.idCS] = false;
+        }
+    }
+    return countArr;
+}
+
+void topologicalSort( unordered_map<int, vector<pairCS>>& g, unordered_map<int, bool>& count, vector<int>& ans) {
+    count = countCS(g);
+       
+    ans.clear();
+    for (auto & el: count)
+        if (!el.second)
+            dfs(el.first, g, count, ans);
+    reverse(ans.begin(), ans.end());
+}
+
+
 int main()
 {
-
+   
     setlocale(LC_ALL, "Russian");
-    vector<CS> vecCS;
-    vector<Pipe> vecPipe;
+    unordered_map<int, CS> mapCS;
+    unordered_map<int, Pipe> mapPipe;
+    //vector < vector<int> > graph;
+    unordered_map<int, vector<pairCS>> graph;
+
     for (;;)
     {
         system("CLS");
@@ -297,11 +385,13 @@ int main()
             "10. Фильр КС по названию" << endl <<
             "11. Фильтр КС по проценту незадействованных цехов" << endl <<
             "12. Фильтр труб, которые в ремонте" << endl <<
+            "13. Соединить две КС трубой в газотранспортную сеть" << endl << 
+            "14. Топологическая сортировка" << endl <<
             "0. Выход" << endl;
         command = inputNotNegativeInteger("Введите номер команды: ");
-        while (command > 12)
+        while (command > 14)
         {
-            cout << "Введенное число больше 12! ";
+            cout << "Введенное число больше 14! ";
             command = inputNotNegativeInteger("Введите номер команды: ");
         }
 
@@ -309,71 +399,71 @@ int main()
         {
         case 1:
         {
-            AddPipe(vecPipe);
+            AddPipe(mapPipe);
             break;
         }
         case 2:
         {
-            AddCS(vecCS);
+            AddCS(mapCS);
             break;
         }
         case 3:
         {
-            DisplayCS(vecCS);
-            DisplayPipes(vecPipe);
+            DisplayCS(mapCS);
+            DisplayPipes(mapPipe);
             system("pause");
             break;
         }
         case 4:
         {
-            EditPipes(vecPipe);
+            EditPipes(mapPipe);
             system("pause");
             // Доделать
             break;
         }
         case 5:
         {
-            EditCS(vecCS);
+            EditCS(mapCS);
             system("pause");
             break;
         }
         case 6:
         {
             char* str = inputString("Введите название: ");
-            OutputToFile(vecCS, vecPipe, str);
+            OutputToFile(mapCS, mapPipe, str);
             system("pause");
             break;
         }
         case 7:
         {
             char* str = inputString("Введите название: ");
-            InputFromFile(vecCS, vecPipe, str);
+            InputFromFile(mapCS, mapPipe, str);
             system("pause");
             break;
         }
         case 8:
         {
-            EraseFromPipes(vecPipe);
+            EraseFromPipes(mapPipe);
             system("pause");
             break;
         }
         case 9:
         {
-            EraseFromCS(vecCS);
+            EraseFromCS(mapCS);
             system("pause");
             break;
         }
         case 10:
         {
             char *str = inputString("Введите название: ");
-            auto res = CSFilterByName(vecCS, str);
+            auto res = CSFilterByName(mapCS, str);
             for (int i = 0; i < res.size(); i++)
             {
                 cout << "Компрессорная станция №: " << i + 1 << endl;
-                cout << "Наименование: " << vecCS[res[i]].name << endl;
-                cout << "Количество цехов: " << vecCS[res[i]].number << endl;
-                cout << "Количество цехов в работе: " << vecCS[res[i]].numberOfAvailable << endl;
-                cout << "Показатель эффективности: " << vecCS[res[i]].efficiency << endl << endl;
+                cout << "Наименование: " << mapCS[res[i]].name << endl;
+                cout << "Количество цехов: " << mapCS[res[i]].number << endl;
+                cout << "Количество цехов в работе: " << mapCS[res[i]].numberOfAvailable << endl;
+                cout << "Показатель эффективности: " << mapCS[res[i]].efficiency << endl << endl;
             }
             system("pause");
             break;
@@ -382,15 +472,15 @@ int main()
         {
             float perc = inputNotNegativeFloat("Введите процент незадействованных цехов: ");
             cout << "Результаты +-1%" << endl;
-            auto res = CSFilterByPerc(vecCS, perc);
+            auto res = CSFilterByPerc(mapCS, perc);
             for (int i = 0; i < res.size(); i++)
             {
-                cout << "Компрессорная станция №: " << i + 1 << endl;
-                cout << "Наименование: " << vecCS[res[i]].name << endl;
-                cout << "Количество цехов: " << vecCS[res[i]].number << endl;
-                cout << "Количество цехов в работе: " << vecCS[res[i]].numberOfAvailable << endl;
-                cout << "Показатель эффективности: " << vecCS[res[i]].efficiency << endl;
-                cout << "Процент незадействованных цехов: " << percent(vecCS[res[i]]) << endl << endl;
+                cout << "Компрессорная станция ID: " << res[i] << endl;
+                cout << "Наименование: " << mapCS[res[i]].name << endl;
+                cout << "Количество цехов: " << mapCS[res[i]].number << endl;
+                cout << "Количество цехов в работе: " << mapCS[res[i]].numberOfAvailable << endl;
+                cout << "Показатель эффективности: " << mapCS[res[i]].efficiency << endl;
+                cout << "Процент незадействованных цехов: " << percent(mapCS[res[i]]) << endl << endl;
             }
             system("pause");
             break;
@@ -398,11 +488,63 @@ int main()
         case 12:
         {
             cout << "Все трубы, которые в ремонте: " << endl;
-            auto res = PipeFilterByRepaired(vecPipe);
-            for (int i = 0; i < res.size(); i++)
+            auto res = PipeFilterByRepaired(mapPipe);
+            for (auto &pipe1: mapPipe)
             {
-                cout << "Труба №: " << i + 1 << endl;
-                cout << vecPipe[res[i]];
+                cout << pipe1.second;
+            }
+            system("pause");
+            break;
+        }
+        case 13:
+        {
+
+            /*for (int i = 0; i < mapCS.size(); ++i)
+            {
+                graph[i].resize(mapCS.size());
+                for (int j = 0; j < mapCS.size(); ++j)
+                    graph[i][j] = 0;
+            }*/
+            DisplayCS(mapCS);
+            DisplayPipes(mapPipe);
+
+            int times = inputNotNegativeInteger("Сколько раз Вы собираетесь вводить КСx2 и Трубу?");
+            while (times > 0)
+            {
+                int idPipe = inputNotNegativeInteger("Введите ID трубы: ");
+                while (mapPipe.find(idPipe) == mapPipe.end())
+                {
+                    cout << "Введите еще раз!\n";
+                    idPipe = inputNotNegativeInteger("Введите ID трубы: ");
+                }
+                int idCS1 = inputNotNegativeInteger("Введите ID КС1, от которой идет труба: ");
+                while (mapCS.find(idCS1) == mapCS.end())
+                {
+                    cout << "Введите еще раз!\n";
+                    idCS1 = inputNotNegativeInteger("Введите ID КС1, от которой идет труба: ");
+                }
+                int idCS2 = inputNotNegativeInteger("Введите ID КС2, к которой идет труба: ");
+                while (mapCS.find(idCS2) == mapCS.end())
+                {
+                    cout << "Введите еще раз!\n";
+                    idCS2 = inputNotNegativeInteger("Введите ID КС2, к которой идет труба: ");
+                }
+                times--;
+                addConnection(graph, mapCS, mapPipe, idPipe, idCS1, idCS2);
+            }
+            displayGraph(graph, mapCS, mapPipe);
+            system("pause");
+            break;
+        }
+        case 14:
+        {
+            unordered_map<int, bool> count;
+            vector<int> ans;
+            topologicalSort(graph, count, ans);
+            for (auto index = ans.begin(); index != ans.end(); index++)
+            {
+                cout << *index;
+                if (index + 1 != ans.end()) cout << " -> ";
             }
             system("pause");
             break;

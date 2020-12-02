@@ -1,62 +1,59 @@
 #pragma once
-
-
 #include <regex>
 #include <string>
 #include <iostream>
 #include <fstream>
 #include <cstring>
 
-using namespace std;
 
 
-inline bool isNotNegativeFloat(const string& s)
+inline bool isNotNegativeFloat(const std::string& s)
 {
-    const regex digit_regex("^[\+]?[0-9]+(\,[0-9])?[0-9]*");
+    const std::regex digit_regex("^[\+]?[0-9]+(\,[0-9])?[0-9]*");
     return regex_match(s, digit_regex);
 }
 
-inline bool isNotNegativeInteger(const string& s)
+inline bool isNotNegativeInteger(const std::string& s)
 {
-    const regex digit_regex("^[\+]?[0-9]+");
+    const std::regex digit_regex("^[\+]?[0-9]+");
     return regex_match(s, digit_regex);
 }
 
-inline float inputNotNegativeFloat(const string& msg)
+inline float inputNotNegativeFloat(const std::string& msg)
 {
     char str[100];
     bool first = true;
     do {
-        if (!first) cout << "Некорректный ввод, введите еще раз >> ";
-        cout << msg;
-        cin >> str;
+        if (!first) std::cout << "Некорректный ввод, введите еще раз >> ";
+        std::cout << msg;
+        std::cin >> str;
         first = false;
     } while (!isNotNegativeFloat(str));
     return atof(str);
 }
 
-inline int inputNotNegativeInteger(const string& msg)
+inline int inputNotNegativeInteger(const std::string& msg)
 {
     char str[100];
     bool first = true;
     do
     {
-        if (!first) cout << "Некорректный ввод, введите еще раз >> ";
-        cout << msg;
-        cin >> str;
+        if (!first) std::cout << "Некорректный ввод, введите еще раз >> ";
+        std::cout << msg;
+        std::cin >> str;
         first = false;
     } while (!isNotNegativeInteger(str));
     return atoi(str);
 }
 
-inline char* inputString(string msg)
+inline char* inputString(std::string msg)
 {
-    cout << msg;
+    std::cout << msg;
     char ch = 0;
     char* str = new char[100];
     int i = 0;
-    cin.ignore(1000, '\n');
-    while ((ch = cin.get()) != '\n') {
+    std::cin.ignore(1000, '\n');
+    while ((ch = std::cin.get()) != '\n') {
         str[i++] = ch;
     }
     str[i] = '\0';
