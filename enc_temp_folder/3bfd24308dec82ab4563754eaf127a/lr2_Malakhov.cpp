@@ -507,7 +507,7 @@ int main()
             }*/
             DisplayCS(mapCS);
             DisplayPipes(mapPipe);
-
+            graph.clear();
             int times = inputNotNegativeInteger("Сколько раз Вы собираетесь вводить КСx2 и Трубу?");
             while (times > 0)
             {

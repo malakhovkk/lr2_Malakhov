@@ -310,7 +310,7 @@ void displayGraph(unordered_map<int, vector<pairCS>>& graph, unordered_map<int, 
         cout << "КС с ID " << el.first << " соединен с: ";
         for (auto cs = el.second.begin(); cs != el.second.end(); cs++)
         {
-            cout << cs->idCS  << " трубой длиной " << cs->length;
+            cout << cs->idCS  << " кс длиной " << cs->length;
             if (cs + 1 != el.second.end()) cout << ", ";
         }
         cout << endl;
