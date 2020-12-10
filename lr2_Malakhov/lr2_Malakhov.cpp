@@ -437,11 +437,11 @@ unordered_map<int, int> visitedCS(unordered_map<int, vector<pairCS>>& g)
 }
 
 bool dfs2(int v, unordered_map<int, vector<pairCS>>& g, unordered_map<int, int>& cl,  int& cycle_st) {
-    cl[v] = 1;
     if (g.find(v) == g.end())
     {
         return false;
     }
+    cl[v] = 1;
     for (size_t i = 0; i < g[v].size(); ++i) {
         int to;
 
@@ -468,7 +468,6 @@ bool searchForCycle(unordered_map<int, vector<pairCS>>& graph)
     //cl.assign(p.size(), 0);
     cycle_st = -1;
     for (auto& el : p)
-        if (!el.second)
             if (dfs2(el.first, graph, p, cycle_st)) break;
     if (cycle_st == -1) return false;
     else return true;
@@ -487,6 +486,7 @@ int main()
     {
         system("CLS");
         int command;
+        cout << "a";
         cout << "1. Добавить трубу" << endl <<
             "2. Добавить КС" << endl <<
             "3. Просмотр всех объектов" << endl <<
@@ -630,13 +630,13 @@ int main()
                 while (times > 0)
                 {
                     int idPipe = inputNotNegativeInteger("Введите ID трубы (введите 0, чтобы выйти): ");
+                    if (idPipe == 0) break;
                     while (mapPipe.find(idPipe) == mapPipe.end())
                     {
                         cout << "Введите еще раз!\n";
                         idPipe = inputNotNegativeInteger("Введите ID трубы (введите 0, чтобы выйти): ");
                         if (idPipe == 0) break;
                     }
-                    if (idPipe == 0) break;
                     int idCS1 = inputNotNegativeInteger("Введите ID КС1, от которой идет труба (введите 0, чтобы выйти): ");
                     while (mapCS.find(idCS1) == mapCS.end())
                     {
@@ -646,13 +646,13 @@ int main()
                     }
                     if (idCS1 == 0) break;
                     int idCS2 = inputNotNegativeInteger("Введите ID КС2, к которой идет труба (введите 0, чтобы выйти): ");
+                    if (idCS2 == 0) break;
                     while (mapCS.find(idCS2) == mapCS.end())
                     {
                         cout << "Введите еще раз!\n";
                         idCS2 = inputNotNegativeInteger("Введите ID КС2, к которой идет труба (введите 0, чтобы выйти): ");
                         if (idCS2 == 0) break;
                     }
-                    if (idCS2 == 0) break;
                     times--;
                     addConnection(graph, mapCS, mapPipe, idPipe, idCS1, idCS2);
                 }
@@ -681,7 +681,7 @@ int main()
             }
             else
             {
-                cout << "Граф ацикличный!";
+                cout << "Граф цикличный!";
             }
             system("pause");
             break;
