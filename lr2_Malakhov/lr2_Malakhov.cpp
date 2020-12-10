@@ -14,7 +14,7 @@ using namespace std;
 struct pairCS
 {
     int idCS;
-    float length;
+    int idPipe;
 };
 
 void AddPipe( unordered_map<int, Pipe>& mapPipe)
@@ -299,7 +299,7 @@ vector<int> PipeFilterByRepaired(unordered_map<int, Pipe>& mapPipe, bool repaire
 void addConnection(unordered_map<int, vector<pairCS>>& graph, unordered_map<int, CS>& mapCS, unordered_map<int, Pipe>& mapPipe, int idPipe, int idCS1, int idCS2)
 {
     pairCS p1;
-    p1.length = mapPipe[idPipe].length;
+    p1.idPipe = idPipe;
     p1.idCS = idCS2;
     graph[idCS1].push_back(p1);
 }
@@ -310,7 +310,7 @@ void displayGraph(unordered_map<int, vector<pairCS>>& graph, unordered_map<int, 
         cout << "КС с ID " << el.first << " соединен с: ";
         for (auto cs = el.second.begin(); cs != el.second.end(); cs++)
         {
-            cout << cs->idCS  << " кс длиной " << cs->length;
+            cout << cs->idCS  << " кс длиной " << mapPipe[cs->idPipe].length;
             if (cs + 1 != el.second.end()) cout << ", ";
         }
         cout << endl;
@@ -326,11 +326,15 @@ struct pairUsed
 void dfs(int v, unordered_map<int, vector<pairCS>>& g, unordered_map<int, bool>& count, vector<int>& ans) {
     count[v] = true;
     vector<pairCS> arr;
-    arr = g[v];
-    for (auto & el: arr) {
-        int to = el.idCS;
-        if (!count[to])
-            dfs(to, g, count, ans);
+    if (g.find(v) != g.end()) {
+
+        arr = g[v];
+        for (auto& el : arr) {
+            int to = el.idCS;
+
+            if (!count[to])
+                dfs(to, g, count, ans);
+        }
     }
     ans.push_back(v);
 }
@@ -359,6 +363,116 @@ void topologicalSort( unordered_map<int, vector<pairCS>>& g, unordered_map<int, 
     reverse(ans.begin(), ans.end());
 }
 
+void OutputGraphToFile(unordered_map<int, vector<pairCS>> graph, char* str)
+{
+
+    ofstream fout;
+    fout.open(string(str) + ".txt");
+    if (!fout.is_open())
+        cout << "Файл не может быть открыт!\n";
+    else
+    {
+
+        for (auto& el : graph)
+        {
+            fout << el.second.size() << " ";
+            fout <<  el.first << " ";
+            for (auto cs = el.second.begin(); cs != el.second.end(); cs++)
+            {
+                fout << cs->idCS << " " << cs->idPipe << " ";
+            }
+            fout << endl;
+        }
+        cout << "Вывели в файл данные";
+        fout.close();
+    }
+}
+
+
+
+void InputGraphFromFile(unordered_map<int, vector<pairCS>>& graph, char* str)
+{
+
+    ifstream fin(string(str) + ".txt");
+    if (!fin.is_open())
+        cout << "Файл не может быть открыт!\n";
+    else
+    {
+        int buff;
+        while (fin >> buff)
+        {
+            int CSid1;
+            fin >> CSid1;
+            for (int i = 0; i < buff; i++)
+            {
+                int CSid2;
+                fin >> CSid2;
+                int Pipeid;
+                fin >> Pipeid;
+                pairCS pair1;
+                pair1.idCS = CSid2;
+                pair1.idPipe = Pipeid;
+                graph[CSid1].push_back(pair1);
+            }
+        }
+        cout << "Ввели из файла данные";
+        fin.close();
+    }
+
+}
+
+
+unordered_map<int, int> visitedCS(unordered_map<int, vector<pairCS>>& g)
+{
+    unordered_map<int, int> countArr;
+    for (auto& el : g)
+    {
+        countArr[el.first] = 0;
+        for (auto& p1 : el.second)
+        {
+            countArr[p1.idCS] = 0;
+        }
+    }
+    return countArr;
+}
+
+bool dfs2(int v, unordered_map<int, vector<pairCS>>& g, unordered_map<int, int>& cl,  int& cycle_st) {
+    cl[v] = 1;
+    if (g.find(v) == g.end())
+    {
+        return false;
+    }
+    for (size_t i = 0; i < g[v].size(); ++i) {
+        int to;
+
+        to = g[v][i].idCS;
+        if (cl[to] == 0) {
+            if (dfs2(to, g, cl, cycle_st))  return true;
+        }
+        else if (cl[to] == 1) {
+            //cycle_end = v;
+            cycle_st = to;
+            return true;
+        }
+    }
+    cl[v] = 2;
+    return false;
+}
+
+bool searchForCycle(unordered_map<int, vector<pairCS>>& graph)
+{
+    //vector<char> cl;
+    unordered_map<int, int> p;
+    int cycle_st, cycle_end;
+    p = visitedCS(graph);
+    //cl.assign(p.size(), 0);
+    cycle_st = -1;
+    for (auto& el : p)
+        if (!el.second)
+            if (dfs2(el.first, graph, p, cycle_st)) break;
+    if (cycle_st == -1) return false;
+    else return true;
+}
 
 int main()
 {
@@ -381,17 +495,20 @@ int main()
             "6. Сохранить" << endl <<
             "7. Загрузить" << endl <<
             "8. Удалить трубу" << endl <<
-            "9. Удалить КС" << endl << 
+            "9. Удалить КС" << endl <<
             "10. Фильр КС по названию" << endl <<
             "11. Фильтр КС по проценту незадействованных цехов" << endl <<
             "12. Фильтр труб, которые в ремонте" << endl <<
-            "13. Соединить две КС трубой в газотранспортную сеть" << endl << 
+            "13. Добавить две КС, соединенные трубой в газотранспортную сеть" << endl <<
             "14. Топологическая сортировка" << endl <<
+            "15. Вывод сети в файл" << endl <<
+            "16. Ввод сети из файла" << endl <<
+            "17. Отобразить сеть" << endl <<
             "0. Выход" << endl;
         command = inputNotNegativeInteger("Введите номер команды: ");
-        while (command > 14)
+        while (command > 17)
         {
-            cout << "Введенное число больше 14! ";
+            cout << "Введенное число больше 17! ";
             command = inputNotNegativeInteger("Введите номер команды: ");
         }
 
@@ -507,45 +624,88 @@ int main()
             }*/
             DisplayCS(mapCS);
             DisplayPipes(mapPipe);
-            graph.clear();
-            int times = inputNotNegativeInteger("Сколько раз Вы собираетесь вводить КСx2 и Трубу?");
-            while (times > 0)
+            if (mapCS.size() >= 2)
             {
-                int idPipe = inputNotNegativeInteger("Введите ID трубы: ");
-                while (mapPipe.find(idPipe) == mapPipe.end())
+                int times = inputNotNegativeInteger("Сколько раз Вы собираетесь вводить КСx2 и Трубу?");
+                while (times > 0)
                 {
-                    cout << "Введите еще раз!\n";
-                    idPipe = inputNotNegativeInteger("Введите ID трубы: ");
+                    int idPipe = inputNotNegativeInteger("Введите ID трубы (введите 0, чтобы выйти): ");
+                    while (mapPipe.find(idPipe) == mapPipe.end())
+                    {
+                        cout << "Введите еще раз!\n";
+                        idPipe = inputNotNegativeInteger("Введите ID трубы (введите 0, чтобы выйти): ");
+                        if (idPipe == 0) break;
+                    }
+                    if (idPipe == 0) break;
+                    int idCS1 = inputNotNegativeInteger("Введите ID КС1, от которой идет труба (введите 0, чтобы выйти): ");
+                    while (mapCS.find(idCS1) == mapCS.end())
+                    {
+                        cout << "Введите еще раз!\n";
+                        idCS1 = inputNotNegativeInteger("Введите ID КС1, от которой идет труба (введите 0, чтобы выйти): ");
+                        if (idCS1 == 0) break;
+                    }
+                    if (idCS1 == 0) break;
+                    int idCS2 = inputNotNegativeInteger("Введите ID КС2, к которой идет труба (введите 0, чтобы выйти): ");
+                    while (mapCS.find(idCS2) == mapCS.end())
+                    {
+                        cout << "Введите еще раз!\n";
+                        idCS2 = inputNotNegativeInteger("Введите ID КС2, к которой идет труба (введите 0, чтобы выйти): ");
+                        if (idCS2 == 0) break;
+                    }
+                    if (idCS2 == 0) break;
+                    times--;
+                    addConnection(graph, mapCS, mapPipe, idPipe, idCS1, idCS2);
                 }
-                int idCS1 = inputNotNegativeInteger("Введите ID КС1, от которой идет труба: ");
-                while (mapCS.find(idCS1) == mapCS.end())
-                {
-                    cout << "Введите еще раз!\n";
-                    idCS1 = inputNotNegativeInteger("Введите ID КС1, от которой идет труба: ");
-                }
-                int idCS2 = inputNotNegativeInteger("Введите ID КС2, к которой идет труба: ");
-                while (mapCS.find(idCS2) == mapCS.end())
-                {
-                    cout << "Введите еще раз!\n";
-                    idCS2 = inputNotNegativeInteger("Введите ID КС2, к которой идет труба: ");
-                }
-                times--;
-                addConnection(graph, mapCS, mapPipe, idPipe, idCS1, idCS2);
+                displayGraph(graph, mapCS, mapPipe);
             }
-            displayGraph(graph, mapCS, mapPipe);
+            else
+            {
+                cout << "Невозможно совершить операцию!";
+            }
             system("pause");
             break;
         }
         case 14:
         {
-            unordered_map<int, bool> count;
-            vector<int> ans;
-            topologicalSort(graph, count, ans);
-            for (auto index = ans.begin(); index != ans.end(); index++)
+            if (!searchForCycle(graph))
             {
-                cout << *index;
-                if (index + 1 != ans.end()) cout << " -> ";
+                unordered_map<int, bool> count;
+                vector<int> ans;
+                topologicalSort(graph, count, ans);
+                for (auto index = ans.begin(); index != ans.end(); index++)
+                {
+                    cout << *index;
+                    if (index + 1 != ans.end()) cout << " -> ";
+                }
+                system("pause");
             }
+            else
+            {
+                cout << "Граф ацикличный!";
+            }
+            system("pause");
+            break;
+        }
+        case 15:
+        {
+            char* str = inputString("Введите название: ");
+
+            OutputGraphToFile(graph, str);
+
+            system("pause");
+            break;
+        }
+        case 16:
+        {
+            char* str = inputString("Введите название: ");
+
+            InputGraphFromFile(graph, str);
+            system("pause");
+            break;
+        }
+        case 17:
+        {
+            displayGraph(graph, mapCS, mapPipe);
             system("pause");
             break;
         }
