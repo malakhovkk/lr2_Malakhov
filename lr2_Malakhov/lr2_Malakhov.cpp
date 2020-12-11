@@ -473,6 +473,51 @@ bool searchForCycle(unordered_map<int, vector<pairCS>>& graph)
     else return true;
 }
 
+bool checkIfOk(unordered_map<int, vector<pairCS>>& graph, unordered_map<int, CS>& mapCS, unordered_map<int, Pipe>& mapPipe, int& idCS)
+{
+    
+    bool exist = false;
+    vector<int> toDelete;
+    if (graph.find(idCS) != graph.end()) return false;
+    for (auto el = graph.begin(); el != graph.end(); el++)
+    {
+        for (auto it = 0; it < el->second.size(); it++)
+        {
+            if (el->second[it].idCS == idCS) {
+                el->second.erase(el->second.begin() + it);
+                exist = true;
+                toDelete.push_back(el->first);
+            }
+        }
+    }
+    for (auto& i : toDelete)
+    {
+        if (graph[i].size() == 0) graph.erase(i);
+    }
+    return exist;
+}
+
+void deleteConnection(unordered_map<int, vector<pairCS>>& graph, unordered_map<int, CS> mapCS, unordered_map<int, Pipe>& mapPipe)
+{
+    int idCS = inputNotNegativeInteger("Введите ID КС: ");
+
+    while (mapCS.find(idCS) == mapCS.end())
+    {
+        cout << "Введите еще раз, в сети нет такой КС!\n";
+        idCS = inputNotNegativeInteger("Введите ID КС: ");
+    }
+    if (checkIfOk(graph, mapCS, mapPipe, idCS))
+    {
+        cout << "Успешно удален!\n";
+    }
+    else
+    {
+        cout << "Вершина не является истоком";
+    }
+
+
+}
+
 int main()
 {
    
@@ -504,11 +549,12 @@ int main()
             "15. Вывод сети в файл" << endl <<
             "16. Ввод сети из файла" << endl <<
             "17. Отобразить сеть" << endl <<
+            "18. Удалить вершину(сток)" << endl <<
             "0. Выход" << endl;
         command = inputNotNegativeInteger("Введите номер команды: ");
-        while (command > 17)
+        while (command > 18)
         {
-            cout << "Введенное число больше 17! ";
+            cout << "Введенное число больше 18! ";
             command = inputNotNegativeInteger("Введите номер команды: ");
         }
 
@@ -626,25 +672,39 @@ int main()
             DisplayPipes(mapPipe);
             if (mapCS.size() >= 2)
             {
+                unordered_map<int, bool> usedPipes;
+
+                for (auto& el : mapPipe)
+                {
+                    usedPipes.insert(make_pair(el.first, false));
+                }
+                for (auto& el : graph)
+                {
+                    for (auto& p1 : el.second)
+                    {
+                        usedPipes[p1.idPipe] = true;
+                    }
+                }
                 int times = inputNotNegativeInteger("Сколько раз Вы собираетесь вводить КСx2 и Трубу?");
                 while (times > 0)
                 {
                     int idPipe = inputNotNegativeInteger("Введите ID трубы (введите 0, чтобы выйти): ");
                     if (idPipe == 0) break;
-                    while (mapPipe.find(idPipe) == mapPipe.end())
+                    while (mapPipe.find(idPipe) == mapPipe.end() || usedPipes[idPipe])
                     {
                         cout << "Введите еще раз!\n";
                         idPipe = inputNotNegativeInteger("Введите ID трубы (введите 0, чтобы выйти): ");
                         if (idPipe == 0) break;
                     }
+                    usedPipes[idPipe] = true;
                     int idCS1 = inputNotNegativeInteger("Введите ID КС1, от которой идет труба (введите 0, чтобы выйти): ");
+                    if (idCS1 == 0) break;
                     while (mapCS.find(idCS1) == mapCS.end())
                     {
                         cout << "Введите еще раз!\n";
                         idCS1 = inputNotNegativeInteger("Введите ID КС1, от которой идет труба (введите 0, чтобы выйти): ");
                         if (idCS1 == 0) break;
                     }
-                    if (idCS1 == 0) break;
                     int idCS2 = inputNotNegativeInteger("Введите ID КС2, к которой идет труба (введите 0, чтобы выйти): ");
                     if (idCS2 == 0) break;
                     while (mapCS.find(idCS2) == mapCS.end())
@@ -706,6 +766,12 @@ int main()
         case 17:
         {
             displayGraph(graph, mapCS, mapPipe);
+            system("pause");
+            break;
+        }
+        case 18:
+        {
+            deleteConnection(graph, mapCS, mapPipe);
             system("pause");
             break;
         }
