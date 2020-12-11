@@ -550,11 +550,13 @@ int main()
             "16. Ввод сети из файла" << endl <<
             "17. Отобразить сеть" << endl <<
             "18. Удалить вершину(сток)" << endl <<
+            "19. Удалить граф" << endl <<
+            "20. Удалить ребро из графа" << endl <<
             "0. Выход" << endl;
         command = inputNotNegativeInteger("Введите номер команды: ");
-        while (command > 18)
+        while (command > 20)
         {
-            cout << "Введенное число больше 18! ";
+            cout << "Введенное число больше 20! ";
             command = inputNotNegativeInteger("Введите номер команды: ");
         }
 
@@ -618,7 +620,7 @@ int main()
         }
         case 10:
         {
-            char *str = inputString("Введите название: ");
+            char* str = inputString("Введите название: ");
             auto res = CSFilterByName(mapCS, str);
             for (int i = 0; i < res.size(); i++)
             {
@@ -652,7 +654,7 @@ int main()
         {
             cout << "Все трубы, которые в ремонте: " << endl;
             auto res = PipeFilterByRepaired(mapPipe);
-            for (auto &pipe1: mapPipe)
+            for (auto& pipe1 : mapPipe)
             {
                 cout << pipe1.second;
             }
@@ -661,13 +663,6 @@ int main()
         }
         case 13:
         {
-
-            /*for (int i = 0; i < mapCS.size(); ++i)
-            {
-                graph[i].resize(mapCS.size());
-                for (int j = 0; j < mapCS.size(); ++j)
-                    graph[i][j] = 0;
-            }*/
             DisplayCS(mapCS);
             DisplayPipes(mapPipe);
             if (mapCS.size() >= 2)
@@ -737,7 +732,6 @@ int main()
                     cout << *index;
                     if (index + 1 != ans.end()) cout << " -> ";
                 }
-                system("pause");
             }
             else
             {
@@ -773,6 +767,52 @@ int main()
         {
             deleteConnection(graph, mapCS, mapPipe);
             system("pause");
+            break;
+        }
+        case 19:
+        {
+            graph.clear();
+            cout << "Граф удалён!\n";
+            system("pause");
+            break;
+        }
+        case 20:
+        {
+            int i = 1;
+            for(auto &el: graph)
+            {
+                for (auto it = el.second.begin(); it != el.second.end(); ++it)
+                {
+                    cout << "Номер ребрa: " << i << endl;
+                    cout << el.first << " -> " << it->idCS << endl;
+                    i++;
+                }
+            }
+            int num = inputNotNegativeInteger("Введите номер ребра, который нужно удалить:");
+            while (num <= 0 || num > i)
+            {
+                cout << "Неверный ввод:\n";
+                num = inputNotNegativeInteger("Введите номер ребра, который нужно удалить:");
+            }
+            int i2 = 1;
+            int res;
+            int resI;
+            bool fetched = false;
+            for (auto& el : graph)
+            {
+                if (fetched) break;
+                for (auto it = 0; it < el.second.size() && !fetched; ++it)
+                {
+                    if (i2 == num)
+                    {
+                        res = it;
+                        resI = el.first;
+                        fetched = true;
+                    }
+                    i2++;
+                }
+            }
+            graph[resI].erase(graph[resI].begin() + res);
             break;
         }
         case 0:
