@@ -684,7 +684,7 @@ int main()
                 {
                     int idPipe = inputNotNegativeInteger("Введите ID трубы (введите 0, чтобы выйти): ");
                     if (idPipe == 0) break;
-                    while (mapPipe.find(idPipe) == mapPipe.end() || usedPipes[idPipe])
+                    while (mapPipe.find(idPipe) == mapPipe.end() || usedPipes[idPipe] || !mapPipe[idPipe].repaired)
                     {
                         cout << "Введите еще раз!\n";
                         idPipe = inputNotNegativeInteger("Введите ID трубы (введите 0, чтобы выйти): ");
