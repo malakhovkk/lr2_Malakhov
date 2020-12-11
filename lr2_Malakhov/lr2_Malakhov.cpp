@@ -531,7 +531,6 @@ int main()
     {
         system("CLS");
         int command;
-        cout << "a";
         cout << "1. Добавить трубу" << endl <<
             "2. Добавить КС" << endl <<
             "3. Просмотр всех объектов" << endl <<
