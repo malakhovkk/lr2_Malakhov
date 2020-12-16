@@ -444,7 +444,6 @@ bool dfs2(int v, unordered_map<int, vector<pairCS>>& g, unordered_map<int, int>&
     cl[v] = 1;
     for (size_t i = 0; i < g[v].size(); ++i) {
         int to;
-
         to = g[v][i].idCS;
         if (cl[to] == 0) {
             if (dfs2(to, g, cl, cycle_st))  return true;
@@ -478,7 +477,12 @@ bool checkIfOk(unordered_map<int, vector<pairCS>>& graph, unordered_map<int, CS>
     
     bool exist = false;
     vector<int> toDelete;
-    if (graph.find(idCS) != graph.end()) return false;
+    if (graph.find(idCS) != graph.end())
+    {
+        graph.erase(idCS);
+        exist = true;
+    }
+    //if (graph.find(idCS) != graph.end()) return false;
     for (auto el = graph.begin(); el != graph.end(); el++)
     {
         for (auto it = 0; it < el->second.size(); it++)
@@ -490,10 +494,11 @@ bool checkIfOk(unordered_map<int, vector<pairCS>>& graph, unordered_map<int, CS>
             }
         }
     }
-    for (auto& i : toDelete)
-    {
-        if (graph[i].size() == 0) graph.erase(i);
-    }
+
+    //for (auto& i : toDelete)
+    //{
+    //    if (graph[i].size() == 0) graph.erase(i);
+    //}
     return exist;
 }
 
@@ -512,7 +517,7 @@ void deleteConnection(unordered_map<int, vector<pairCS>>& graph, unordered_map<i
     }
     else
     {
-        cout << "Вершина не является истоком";
+        cout << "Вершина не является истоком\n";
     }
 
 
@@ -548,7 +553,7 @@ int main()
             "15. Вывод сети в файл" << endl <<
             "16. Ввод сети из файла" << endl <<
             "17. Отобразить сеть" << endl <<
-            "18. Удалить вершину(сток)" << endl <<
+            "18. Удалить вершину из графа" << endl <<
             "19. Удалить граф" << endl <<
             "20. Удалить ребро из графа" << endl <<
             "0. Выход" << endl;
@@ -684,7 +689,7 @@ int main()
                 {
                     int idPipe = inputNotNegativeInteger("Введите ID трубы (введите 0, чтобы выйти): ");
                     if (idPipe == 0) break;
-                    while (mapPipe.find(idPipe) == mapPipe.end() || usedPipes[idPipe] || !mapPipe[idPipe].repaired)
+                    while (mapPipe.find(idPipe) == mapPipe.end() || usedPipes[idPipe] || mapPipe[idPipe].repaired)
                     {
                         cout << "Введите еще раз!\n";
                         idPipe = inputNotNegativeInteger("Введите ID трубы (введите 0, чтобы выйти): ");
