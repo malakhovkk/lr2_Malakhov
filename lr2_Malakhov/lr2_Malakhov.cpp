@@ -9,6 +9,7 @@
 #include "utils.h"
 #include "CS.h"
 #include <unordered_map>
+#include <queue>
 using namespace std;
 
 struct pairCS
@@ -523,6 +524,88 @@ void deleteConnection(unordered_map<int, vector<pairCS>>& graph, unordered_map<i
 
 }
 
+int FindShortestPath(unordered_map<int, vector<pairCS>>& graph, unordered_map<int, Pipe>& mapPipe, const int & idCS1, const int& idCS2)
+{
+   /* queue<int> q;
+    unordered_map<int, bool> used = countCS(graph);
+    int n = used.size();
+    q.push(idCS1);
+    vector<int> d(n, INT_MAX), p(n);
+    used[idCS1] = true;
+    p[idCS1] = -1;
+    while (!q.empty()) {
+        int v = q.front();
+        q.pop();
+        for (size_t i = 0; i < graph[v].size(); ++i) {
+            int to = graph[v][i].idCS;
+            if (!used[to]) {
+                used[to] = true;
+                q.push(to);
+                d[to] = d[v] + mapPipe[graph[v][i].idPipe].length;
+                p[to] = v;
+            }
+        }
+    }
+    int sum = 0;*/
+
+
+        unordered_map<int, bool> u  = countCS(graph);
+        int n = u.size();
+        int s = idCS1; // стартовая вершина
+
+        unordered_map<int, int> d;
+        for (auto& el : graph)
+        {
+            for (auto& el2 : el.second)
+            {
+                d[el2.idPipe] = 1e5;
+            }
+        }
+        unordered_map<int, int> p;
+        for (auto& el : graph)
+        {
+            for (auto& el2 : el.second)
+            {
+                p[el2.idPipe] = 0;
+            }
+        }
+        d[s] = 0;
+
+        for (int i = 0; i < n; ++i) {
+            int v = -1;
+            for (int j = 0; j < n; ++j)
+                if (!u[j] && (v == -1 || d[j] < d[v]))
+                    v = j;
+            if (d[v] == 1e5)
+                break;
+            u[v] = true;
+
+            for (size_t j = 0; j < graph[v].size(); ++j) {
+                int to = graph[v][j].idCS,
+                    len = mapPipe[graph[v][j].idPipe].length;
+                if (d[v] + len < d[to]) {
+                    d[to] = d[v] + len;
+                    p[to] = v;
+                }
+            }
+        }
+
+   /* int sum = 0;
+    for (int v = idCS2; v != s; v = p[v])
+        sum += d[v];*/
+
+    /*vector<int> path;
+    for (int v = idCS2; v != s; v = p[v])
+        path.push_back(v);
+    path.push_back(s);
+
+    for (auto& i : d) cout << i.second << " ";
+    cout << endl;
+    cout << endl;*/
+
+    return d[idCS2];
+}
+
 int main()
 {
    
@@ -556,11 +639,12 @@ int main()
             "18. Удалить вершину из графа" << endl <<
             "19. Удалить граф" << endl <<
             "20. Удалить ребро из графа" << endl <<
+            "21. Поиск кратчайшего пути" << endl <<
             "0. Выход" << endl;
         command = inputNotNegativeInteger("Введите номер команды: ");
-        while (command > 20)
+        while (command > 21)
         {
-            cout << "Введенное число больше 20! ";
+            cout << "Введенное число больше 21! ";
             command = inputNotNegativeInteger("Введите номер команды: ");
         }
 
@@ -685,9 +769,10 @@ int main()
                     }
                 }
                 int times = inputNotNegativeInteger("Сколько раз Вы собираетесь вводить КСx2 и Трубу?");
+                int idPipe = 0, idCS1 = 0, idCS2 = 0;
                 while (times > 0)
                 {
-                    int idPipe = inputNotNegativeInteger("Введите ID трубы (введите 0, чтобы выйти): ");
+                    idPipe = inputNotNegativeInteger("Введите ID трубы (введите 0, чтобы выйти): ");
                     if (idPipe == 0) break;
                     while (mapPipe.find(idPipe) == mapPipe.end() || usedPipes[idPipe] || mapPipe[idPipe].repaired)
                     {
@@ -695,8 +780,9 @@ int main()
                         idPipe = inputNotNegativeInteger("Введите ID трубы (введите 0, чтобы выйти): ");
                         if (idPipe == 0) break;
                     }
+                    if (idPipe == 0) break;
                     usedPipes[idPipe] = true;
-                    int idCS1 = inputNotNegativeInteger("Введите ID КС1, от которой идет труба (введите 0, чтобы выйти): ");
+                    idCS1 = inputNotNegativeInteger("Введите ID КС1, от которой идет труба (введите 0, чтобы выйти): ");
                     if (idCS1 == 0) break;
                     while (mapCS.find(idCS1) == mapCS.end())
                     {
@@ -704,7 +790,8 @@ int main()
                         idCS1 = inputNotNegativeInteger("Введите ID КС1, от которой идет труба (введите 0, чтобы выйти): ");
                         if (idCS1 == 0) break;
                     }
-                    int idCS2 = inputNotNegativeInteger("Введите ID КС2, к которой идет труба (введите 0, чтобы выйти): ");
+                    if (idCS1 == 0) break;
+                    idCS2 = inputNotNegativeInteger("Введите ID КС2, к которой идет труба (введите 0, чтобы выйти): ");
                     if (idCS2 == 0) break;
                     while (mapCS.find(idCS2) == mapCS.end())
                     {
@@ -712,10 +799,11 @@ int main()
                         idCS2 = inputNotNegativeInteger("Введите ID КС2, к которой идет труба (введите 0, чтобы выйти): ");
                         if (idCS2 == 0) break;
                     }
+                    if (idCS2 == 0) break;
                     times--;
                     addConnection(graph, mapCS, mapPipe, idPipe, idCS1, idCS2);
                 }
-                displayGraph(graph, mapCS, mapPipe);
+                if(idPipe != 0 || idCS1 != 0 || idCS2 != 0) displayGraph(graph, mapCS, mapPipe);
             }
             else
             {
@@ -783,7 +871,7 @@ int main()
         case 20:
         {
             int i = 1;
-            for(auto &el: graph)
+            for (auto& el : graph)
             {
                 for (auto it = el.second.begin(); it != el.second.end(); ++it)
                 {
@@ -818,6 +906,40 @@ int main()
             }
             graph[resI].erase(graph[resI].begin() + res);
             break;
+        }
+        case 21:
+        {
+            unordered_map <int, bool> usedCS;
+            //for (auto& el : mapCS)
+            //{
+            //    usedCS.insert(make_pair(el.first, false));
+            //}
+            for (auto& el : graph)
+            {
+                for (auto& p1 : el.second)
+                {
+                    usedCS[p1.idCS] = true;
+                }
+            }
+            int idCS1 = inputNotNegativeInteger("Введите ID 1 КС: ");
+            while (graph.find(idCS1) == graph.end())
+            {
+                cout << "Некорректный ввод\n";
+                idCS1 = inputNotNegativeInteger("Введите ID 1 КС: ");
+            }
+            int idCS2 = inputNotNegativeInteger("Введите ID 2 КС: ");
+            while (usedCS.find(idCS2) == usedCS.end())
+            {
+                cout << "Некорректный ввод\n";
+                idCS2 = inputNotNegativeInteger("Введите ID 2 КС: ");
+            }
+            cout << FindShortestPath(graph, mapPipe, idCS1, idCS2);
+            system("pause");
+            break;
+        }
+        case 22:
+        {
+
         }
         case 0:
         {
