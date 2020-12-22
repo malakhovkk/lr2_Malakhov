@@ -11,6 +11,7 @@
 #include "CS.h"
 #include <unordered_map>
 #include <queue>
+#include <iterator>
 using namespace std;
 
 #define INF 1E6
@@ -568,6 +569,7 @@ int FindShortestPath(unordered_map<int, vector<pairCS>>& graph, unordered_map<in
         unordered_map<int, int> p;
         for (auto& el : graph)
         {
+            p[el.first] = 0;
             for (auto& el2 : el.second)
             {
                 p[el2.idCS] = 0;
@@ -598,7 +600,20 @@ int FindShortestPath(unordered_map<int, vector<pairCS>>& graph, unordered_map<in
                 }
             }
         }
-
+        
+        if (d[idCS2] < 1e5)
+        {
+            vector<int> path;
+            for (int v = idCS2; v != s; v = p[v])
+                path.push_back(v);
+            path.push_back(s);
+            reverse(path.begin(), path.end());
+            cout << "Путь: ";
+            for (int& i : path)
+            {
+                cout << i << " ";
+            }
+        }
    /* int sum = 0;
     for (int v = idCS2; v != s; v = p[v])
         sum += d[v];*/
@@ -608,11 +623,108 @@ int FindShortestPath(unordered_map<int, vector<pairCS>>& graph, unordered_map<in
         path.push_back(v);
     path.push_back(s);
 
-    for (auto& i : d) cout << i.second << " ";
+    for (auto& i : d) cout << i.second << " ";\
     cout << endl;
     cout << endl;*/
 
     return d[idCS2];
+}
+
+
+
+
+int bfs(unordered_map<int, vector<pairCS>>& graph, int id_from, int id_to, unordered_map<int, int>& path, map <pair<int, int>, float> flow, map <pair<int, int>, float>& capacity)
+{
+    //unordered_map<int, int>color; //цвета вершин
+    unordered_map<int, int>queue; //Очередь, хранящая номера вершин входящих в неё
+    //vector<int>path; //массив пути
+    //map <pair<int,int>,int> flow;
+   // map <pair<int, int>, int> capacity;
+
+    unordered_map<int, int> color;
+    for (auto i = graph.begin(); i != graph.end(); i++)
+    {
+        color[i->first] = 0; //отмечаем все вершины непройденными WHITE=0
+        for (auto el : i->second)
+        {
+            color[el.idCS] = 0;
+        }
+    }
+    
+    auto head = graph.begin();   // Начало очереди 0
+    auto tail = graph.begin();   // Хвост 0
+
+    queue[tail->first] = id_from;   // Вступили на первую вершину
+    tail++;
+    color[id_from] = 1;
+
+    path[id_from] = -1;   // Специальная метка для начала пути
+    while (head != tail) //Пока хвост не совпадет с головой
+    {
+        int u = queue[head->first]; //вершина u пройдена
+        head++;
+        color[u] = -1;
+
+        for (auto i = color.begin(); i != color.end(); i++) // Смотрим смежные вершины
+        {
+            // Если не пройдена и не заполнена
+            if (color[i->first] == 0 && (capacity[make_pair(u, i->first)] - flow[make_pair(u, i->first)] > 0))
+            {
+                // Вступаем на вершину v
+                queue[tail->first] = i->first;
+                tail++;
+                color[i->first] = 1;
+                path[i->first] = u; // Путь обновляем
+            }
+        }
+    }
+    if (color[id_to] == -1) // Если конечная вершина, дошли - возвращаем 0, прочитанная
+        return 0;
+    else return 1;
+}
+float min(float a, float b)
+{
+    return (a < b) ? a : b;
+}
+void max_flow(unordered_map<int, vector<pairCS>>& graph, unordered_map<int, Pipe >& mapPipe)
+{
+
+    int source = inputNotNegativeInteger( "Введите id КС - исток: ");
+    int stock = inputNotNegativeInteger( "Введите id КС - сток: ");
+    if (graph.find(source) != graph.end())
+    {
+        int u;
+        int maxflow = 0;            // Изначально нулевой
+        map <pair<int, int>, float> flow;
+        unordered_map<int, int>path;
+        map <pair<int, int>, float> capacity;
+        for (const auto& i : graph)  // Зануляем матрицу потока
+        {
+            float res;
+            for (auto& x : i.second)
+            {
+                float res = sqrt((float)pow(mapPipe[x.idPipe].diam, 5)/ (float)mapPipe[x.idPipe].length);
+                capacity[make_pair(i.first, x.idCS)]=  res ;
+                flow[make_pair(i.first, x.idCS)] = 0;
+            }
+        }
+        while (bfs(graph, source, stock, path, flow, capacity) == 0)             // Пока существует путь
+        {
+            int delta = INT_MAX;
+            for (u = graph.begin()->first; path[u] >= 0; u = path[u]) // Найти минимальный поток в сети
+            {
+                delta = min(delta, capacity[make_pair(path[u], u)] - flow[make_pair(path[u], u)]);
+            }
+            for (u = graph.begin()->first; path[u] >= 0; u = path[u]) // По алгоритму Форда-Фалкерсона 
+            {
+                flow[make_pair(path[u], u)] += delta;
+                flow[make_pair(u, path[u])] -= delta;
+            }
+            maxflow += delta;                       // Повышаем максимальный поток
+        }
+        cout << "Максимальный поток: " << source << " -> " << stock << " = " << maxflow << endl;
+    }
+    else cout << "Невозможно!" << endl;
 }
 
 
@@ -1026,6 +1138,8 @@ int main()
         }
         case 22:
         {
+            max_flow(graph, mapPipe);
+            system("pause");
             break;
         }
         case 0:
