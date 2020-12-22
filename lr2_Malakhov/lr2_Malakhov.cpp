@@ -556,7 +556,7 @@ int FindShortestPath(unordered_map<int, vector<pairCS>>& graph, unordered_map<in
         int n = u.size();
         int s = idCS1; // стартовая вершина
 
-        unordered_map<int, int> d;
+        unordered_map<int, float> d;
         for (auto& el : graph)
         {
             d[el.first] = 1e5;
@@ -590,8 +590,8 @@ int FindShortestPath(unordered_map<int, vector<pairCS>>& graph, unordered_map<in
             u[v] = true;
 
             for (auto j = graph[v].begin(); j != graph[v].end(); ++j) {
-                int to = j->idCS,
-                    len = mapPipe[j->idPipe].length;
+                int to = j->idCS;
+                 float   len = mapPipe[j->idPipe].length;
                 if (d[v] + len < d[to]) {
                     d[to] = d[v] + len;
                     p[to] = v;
