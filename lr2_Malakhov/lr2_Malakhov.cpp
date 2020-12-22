@@ -521,7 +521,7 @@ void deleteConnection(unordered_map<int, vector<pairCS>>& graph, unordered_map<i
     }
     else
     {
-        cout << "Вершина не является истоком\n";
+        cout << "Произошла ошибка\n";
     }
 
 
@@ -559,9 +559,10 @@ int FindShortestPath(unordered_map<int, vector<pairCS>>& graph, unordered_map<in
         unordered_map<int, int> d;
         for (auto& el : graph)
         {
+            d[el.first] = 1e5;
             for (auto& el2 : el.second)
             {
-                d[el2.idPipe] = 1e5;
+                d[el2.idCS] = 1e5;
             }
         }
         unordered_map<int, int> p;
@@ -569,23 +570,28 @@ int FindShortestPath(unordered_map<int, vector<pairCS>>& graph, unordered_map<in
         {
             for (auto& el2 : el.second)
             {
-                p[el2.idPipe] = 0;
+                p[el2.idCS] = 0;
             }
         }
         d[s] = 0;
 
-        for (int i = 0; i < n; ++i) {
+       // for (int i = 0; i < n; ++i) {
+        for (auto i1 = u.begin(); i1 != u.end(); i1++) {
+            //int i = i1->first;
             int v = -1;
-            for (int j = 0; j < n; ++j)
+           // for (int j = 0; j < n; ++j)
+            for (auto j1 = u.begin(); j1 != u.end(); j1++) {
+                int j = j1->first;
                 if (!u[j] && (v == -1 || d[j] < d[v]))
                     v = j;
+            }
             if (d[v] == 1e5)
                 break;
             u[v] = true;
 
-            for (size_t j = 0; j < graph[v].size(); ++j) {
-                int to = graph[v][j].idCS,
-                    len = mapPipe[graph[v][j].idPipe].length;
+            for (auto j = graph[v].begin(); j != graph[v].end(); ++j) {
+                int to = j->idCS,
+                    len = mapPipe[j->idPipe].length;
                 if (d[v] + len < d[to]) {
                     d[to] = d[v] + len;
                     p[to] = v;
@@ -711,7 +717,7 @@ int main()
             "19. Удалить граф" << endl <<
             "20. Удалить ребро из графа" << endl <<
             "21. Поиск кратчайшего пути" << endl <<
-            "21. Поиск максимального потока " << endl <<
+            "22. Поиск максимального потока " << endl <<
             "0. Выход" << endl;
         command = inputNotNegativeInteger("Введите номер команды: ");
         while (command > 22)
@@ -996,7 +1002,7 @@ int main()
             int idCS1 = inputNotNegativeInteger("Введите ID 1 КС: ");
             while (graph.find(idCS1) == graph.end())
             {
-                cout << "Некорректный ввод\n";
+                cout << "Некорректный ввод или из этой вершины не выходят ребра\n";
                 idCS1 = inputNotNegativeInteger("Введите ID 1 КС: ");
             }
             int idCS2 = inputNotNegativeInteger("Введите ID 2 КС: ");
@@ -1005,7 +1011,15 @@ int main()
                 cout << "Некорректный ввод\n";
                 idCS2 = inputNotNegativeInteger("Введите ID 2 КС: ");
             }
-            cout << FindShortestPath(graph, mapPipe, idCS1, idCS2);
+            float path = FindShortestPath(graph, mapPipe, idCS1, idCS2);
+            if (path >= 1e5)
+            {
+                cout << "Нет пути";
+            }
+            else
+            {
+                cout << "Длина пути:" << path;
+            }
             system("pause");
             break;
         }
