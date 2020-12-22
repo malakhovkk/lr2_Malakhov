@@ -994,6 +994,7 @@ int main()
             //}
             for (auto& el : graph)
             {
+                usedCS[el.first] = true;
                 for (auto& p1 : el.second)
                 {
                     usedCS[p1.idCS] = true;
